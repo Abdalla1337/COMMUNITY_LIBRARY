@@ -11,8 +11,8 @@ db.run(`
     `);
 
 function createUserRepository(newUser) {
-  return new Promise((res, rej) => {
-    const {username, email, password, avatar} = newUser
+  return new Promise((resolve, reject) => {
+    const { username, email, password, avatar } = newUser;
     db.run(
       `
     INSERT INTO users (username, email, password, avatar) 
@@ -20,17 +20,37 @@ function createUserRepository(newUser) {
     `,
       [username, email, password, avatar],
       (err) => {
-        if(err) {
-            rej(err)
+        if (err) {
+          reject(err);
         } else {
-            res({message:'User Created'})
+          resolve({ id: this.lastID, ...newUser });
         }
       }
     );
   });
 }
 
+function findUserByEmailRepository(email) {
+  return new Promise((resolve, reject) => {
+    db.get(
+      `
+    SELECT id, username, email, avatar 
+    FROM users
+    WHERE email = ?
+    `,
+      [email],
+      (err, row) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(row);
+        }
+      }
+    );
+  });
+}
 
 export default {
-    createUserRepository
-}
+  createUserRepository,
+  findUserByEmailRepository
+};
